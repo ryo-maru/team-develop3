@@ -49,7 +49,7 @@ class AgendasController < ApplicationController
 
     if @agenda.destroy
     team_members.each do | member |
-      AssignMailer.del_agenda_mail(member.email, agenda.title).deliver
+      AssignMailer.del_agenda_mail(member.email).deliver
     end
       redirect_to dashboard_url, notice:"タスクを削除しました！"
     end
