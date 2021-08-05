@@ -9,6 +9,7 @@ class AssignMailer < ApplicationMailer
 
   def del_agenda_mail(email, title)
     @email = email
+    binding.irb
     @title = title
     mail to: @email, subject: 'Agendaが削除されました。'
   end

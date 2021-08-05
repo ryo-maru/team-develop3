@@ -44,8 +44,11 @@ class AgendasController < ApplicationController
   #end
 
   def destroy
+
+    team_members = @agenda.team.members
+
     if @agenda.destroy
-    team_url.each do | member |
+    team_members.each do | member |
       AssignMailer.del_agenda_mail(member.email, agenda.title).deliver
     end
       redirect_to dashboard_url, notice:"タスクを削除しました！"
