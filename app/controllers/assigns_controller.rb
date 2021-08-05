@@ -2,6 +2,7 @@ class AssignsController < ApplicationController
   before_action :authenticate_user!
   before_action :email_exist?, only: [:create]
   before_action :user_exist?, only: [:create]
+  #before_action :if_not_self, only: %i[edit update destroy]
 
   def create
     team = find_team(params[:team_id])
@@ -31,6 +32,8 @@ class AssignsController < ApplicationController
       I18n.t('views.messages.cannot_delete_the_leader')
     elsif Assign.where(user_id: assigned_user.id).count == 1
       I18n.t('views.messages.cannot_delete_only_a_member')
+    elsif current_user != assign.team.owner && current_user != assign.user
+      redirect_to team_url(params[:team_id]), notice: 'チームのリーダーか、ユーザー自身でない場合、削除できません。'
     elsif assign.destroy
       set_next_team(assign, assigned_user)
       I18n.t('views.messages.delete_member')
@@ -65,4 +68,11 @@ class AssignsController < ApplicationController
   def find_team(team_id)
     Team.friendly.find(params[:team_id])
   end
+
+  #def if_not_self
+    #unless current_user.self?(assign)
+      #flash[:notice] = I18n.t('views.messages.no_authority')
+      #redirect_to team_path
+    #end
+  #end
 end

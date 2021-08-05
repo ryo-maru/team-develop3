@@ -1,6 +1,8 @@
 class TeamsController < ApplicationController
   before_action :authenticate_user!
   before_action :set_team, only: %i[show edit update destroy]
+#  before_action :if_not_leader, only: %i[edit update destroy]
+
 
   def index
     @teams = Team.all
@@ -15,7 +17,12 @@ class TeamsController < ApplicationController
     @team = Team.new
   end
 
-  def edit; end
+  def edit
+    unless current_user == @team.owner
+      redirect_to team_path, notice: 'チームリーダーのみ編集可能です'
+    end
+  end
+
 
   def create
     @team = Team.new(team_params)
@@ -56,4 +63,12 @@ class TeamsController < ApplicationController
   def team_params
     params.fetch(:team, {}).permit %i[name icon icon_cache owner_id keep_team_id]
   end
+
+  #def if_not_leader
+    #unless current_user.owner?(@team)
+      #flash[:notice] = I18n.t('views.messages.no_authority')
+      #redirect_to team_path
+    #end
+  #end
+
 end
