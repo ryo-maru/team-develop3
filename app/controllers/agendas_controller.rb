@@ -1,5 +1,5 @@
 class AgendasController < ApplicationController
-  # before_action :set_agenda, only: %i[show edit update destroy]
+   before_action :set_agenda, only: %i[show edit update destroy]
 
   def index
     @agendas = Agenda.all
@@ -15,11 +15,61 @@ class AgendasController < ApplicationController
     @agenda.team = Team.friendly.find(params[:team_id])
     current_user.keep_team_id = @agenda.team.id
     if current_user.save && @agenda.save
-      redirect_to dashboard_url, notice: I18n.t('views.messages.create_agenda') 
+      redirect_to dashboard_url, notice: I18n.t('views.messages.create_agenda')
     else
       render :new
     end
   end
+
+  #def destroy
+
+    #team_members = @agenda.team.members
+
+    #agenda_user = @agenda.user_id
+    #owner_id = @agenda.team.owner_id
+    #puts "agenda_user:#{agenda_user}"
+    #puts "owener_id:#{owner_id}"
+    #puts "current_user:#{current_user.id}"
+
+    #if current_user.id != agenda_user && current_user.id != owner_id
+      #redirect_to dashboard_url, notice: 'agendaの作成者及びチームリーダーのみ削除できます。'
+    #elsif @agenda.destroy
+      #team_members.each do | member |
+        #AssignMailer.del_agenda_mail(member.email, agenda.title).deliver
+      #end
+      #redirect_to dashboard_url, notice: 'アジェンダを削除しました。'
+    #else
+      #redirect_to dashboard_url, notice: '削除に失敗しました。'
+    #end
+  #end
+
+  def destroy
+
+    team_members = @agenda.team.members
+
+    if @agenda.destroy
+    team_members.each do | member |
+      AssignMailer.del_agenda_mail(member.email).deliver
+    end
+      redirect_to dashboard_url, notice:"タスクを削除しました！"
+    end
+  end
+  #def destroy
+      #@agenda = Agenda.find(params[:id])
+      #agenda_to_be_destroyed = @agenda
+  #  #if @agenda.present?
+      #@agenda.destroy
+      #PostMailer.post_mail(post).deliver  ##Addendum
+      #team_id = agenda_to_be_destroyed.team_id
+      #team_members = User.where(keep_team_id: team_id)
+      #team_members.each do |member|
+
+      #AssignMailer.assign_mail(@assign).deliver
+
+      #redirect_to dashboard_url, notice: "agenda destroyed"
+    #end
+  #end
+
 
   private
 
