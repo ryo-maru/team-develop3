@@ -17,9 +17,17 @@ class AssignsController < ApplicationController
 
   def destroy
     assign = Assign.find(params[:id])
-    destroy_message = assign_destroy(assign, assign.user)
-
-    redirect_to team_url(params[:team_id]), notice: destroy_message
+    assigned_user = assign.user
+    if assigned_user == assign.team.owner
+      redirect_to team_url(params[:team_id]), notice: 'リーダーは削除できません。'
+    elsif Assign.where(user_id: assigned_user.id).count == 1
+      redirect_to team_url(params[:team_id]), notice: 'このユーザーはこのチームにしか所属していないため、削除できません。'
+    else
+      another_team = Assign.find_by(user_id: assigned_user.id).team
+      change_keep_team(assigned_user, another_team) if assigned_user.keep_team_id == assign.team_id
+      assign.destroy
+      redirect_to team_url(params[:team_id]), notice: 'メンバーを削除しました。'
+    end
   end
 
   private
@@ -69,10 +77,4 @@ class AssignsController < ApplicationController
     Team.friendly.find(params[:team_id])
   end
 
-  #def if_not_self
-    #unless current_user.self?(assign)
-      #flash[:notice] = I18n.t('views.messages.no_authority')
-      #redirect_to team_path
-    #end
-  #end
 end
